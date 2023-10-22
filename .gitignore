@@ -1,0 +1,25 @@
+# Ignore build and IDE artifacts
+target/
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Ignore temporary files
+*.swp
+*.swo
+*.db
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# ignore project specific artifacts
+*.obj
+*.mtl
+*.blend*
+*.pyc
