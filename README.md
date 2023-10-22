@@ -1,7 +1,7 @@
 [![crates.io](https://img.shields.io/crates/v/vector-traits.svg)](https://crates.io/crates/vector-traits)
 [![Documentation](https://docs.rs/vector-traits/badge.svg)](https://docs.rs/vector-traits)
 [![Workflow](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)
-[![dependency status](https://deps.rs/crate/vector-traits/0.1.0/status.svg)](https://deps.rs/crate/vector-traits/0.1.0)
+[![dependency status](https://deps.rs/crate/vector-traits/0.1.1/status.svg)](https://deps.rs/crate/vector-traits/0.1.1)
 ![license](https://img.shields.io/crates/l/vector-traits)
 
 # Vector-Traits Crate
