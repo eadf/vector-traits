@@ -1,7 +1,7 @@
 [![crates.io](https://img.shields.io/crates/v/vector-traits.svg)](https://crates.io/crates/vector-traits)
 [![Documentation](https://docs.rs/vector-traits/badge.svg)](https://docs.rs/vector-traits)
 [![Workflow](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)
-[![dependency status](https://deps.rs/crate/vector-traits/0.1.1/status.svg)](https://deps.rs/crate/vector-traits/0.1.1)
+[![dependency status](https://deps.rs/crate/vector-traits/0.2.0/status.svg)](https://deps.rs/crate/vector-traits/0.2.0)
 ![license](https://img.shields.io/crates/l/vector-traits)
 
 # Vector-Traits Crate
@@ -18,7 +18,6 @@ requiring significant code modifications.
 - Basic vector traits `HasXY` and `HasXYZ` for custom vector storage types, e.g., FFI types.
 - Seamless transition between different vector libraries like `cgmath` and `glam`.
 - Ability to switch between different scalar types (`f32`, `f64`) effortlessly.
-- Optional `approx` feature for approximate equality checking through the `SimpleApprox` trait.
 
 ## Supported Vector Implementations
 
@@ -37,7 +36,7 @@ Add `vector-traits` to your `Cargo.toml` dependencies along with the desired fea
 
 ```toml
 [dependencies]
-vector-traits = { version = "0.1.0", features = ["glam", "cgmath", "approx"] }  # only use what you need
+vector-traits = { version = "0.2.0", features = ["glam", "cgmath"] }  # only use what you need
 ```
 
 ## Documentation

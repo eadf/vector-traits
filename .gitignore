@@ -1,10 +1,11 @@
 # Ignore build and IDE artifacts
-target/
-.idea/
+/target
+/.idea
 *.iml
 *.iws
 *.ipr
 out/
+/tarpaulin-report.html
 
 # Ignore temporary files
 *.swp

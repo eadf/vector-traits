@@ -3,31 +3,47 @@
 
 // This file is part of vector-traits.
 
-use num_traits::{real::Real, Float, FromPrimitive};
+#![deny(
+    rust_2018_compatibility,
+    rust_2018_idioms,
+    nonstandard_style,
+    unused,
+    future_incompatible,
+    non_camel_case_types,
+    unused_parens,
+    non_upper_case_globals,
+    unused_qualifications,
+    unused_results,
+    unused_imports,
+    unused_variables,
+    bare_trait_objects,
+    ellipsis_inclusive_range_patterns,
+    elided_lifetimes_in_paths
+)]
+#![warn(clippy::explicit_into_iter_loop)]
+
+use num_traits::{float::FloatCore, real::Real, AsPrimitive, FromPrimitive, Signed, ToPrimitive};
 use std::{
-    fmt::{Debug, Display},
+    fmt::{Debug, Display, LowerExp},
     ops::{Add, AddAssign, DivAssign, Index, MulAssign, Neg, Sub, SubAssign},
 };
 
 #[cfg(feature = "cgmath")]
 pub mod cgmath_impl;
-#[cfg(feature = "cgmath")]
-pub use cgmath;
-
 #[cfg(feature = "glam")]
 pub mod glam_impl;
-#[cfg(feature = "glam")]
-pub use glam;
-
 #[cfg(test)]
 mod tests;
 
+/// A trait meant to to represent f32 or f64
 pub trait GenericScalar
 where
     Self: Display
         + Debug
         + Real
+        + FloatCore
         + FromPrimitive
+        + ToPrimitive
         + MulAssign
         + DivAssign
         + AddAssign
@@ -38,8 +54,26 @@ where
         + Send
         + Into<f64>
         + From<f32>
+        + From<u16>
+        + From<i16>
+        + From<i8>
+        + From<u8>
         + Neg<Output = Self>
-        + num_traits::Signed,
+        + Signed
+        + LowerExp
+        + AsPrimitive<f64>
+        + AsPrimitive<f32>
+        + AsPrimitive<usize>
+        + AsPrimitive<isize>
+        + AsPrimitive<u64>
+        + AsPrimitive<i64>
+        + AsPrimitive<u32>
+        + AsPrimitive<i32>
+        + AsPrimitive<u16>
+        + AsPrimitive<i16>
+        + AsPrimitive<u8>
+        + AsPrimitive<i8>
+        + approx::UlpsEq<Epsilon = Self>,
 {
     const ZERO: Self;
     const ONE: Self;
@@ -48,25 +82,41 @@ where
     const INFINITY: Self;
     const NEG_INFINITY: Self;
     const EPSILON: Self;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn to_f32(v: Self) -> f32;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn to_f64(v: Self) -> f64;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn to_u32(v: Self) -> u32;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn to_usize(v: Self) -> usize;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn from_f32(v: f32) -> Self;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn from_f64(v: f64) -> Self;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn from_u32(v: u32) -> Self;
-    /// this is only intended for 'safe' use, it uses 'as'
-    fn from_usize(v: usize) -> Self;
     fn is_normal(self) -> bool;
     fn is_finite(self) -> bool;
     fn clamp(self, min: Self, max: Self) -> Self;
+}
+
+/// A workaround for Rust's limitations where external traits cannot be implemented for external types.
+///
+/// The `Approx` trait provides methods for performing approximate equality comparisons on types.
+/// It serves as a workaround for Rust's limitations, allowing you to implement approximate
+/// equality checks for types not originally designed with this capability.
+///
+/// This trait leverages the `approx` crate and its traits to perform approximate equality
+/// comparisons. The methods in this trait are wrappers around the corresponding methods provided
+/// by the `approx` crate.
+///
+pub trait Approx: HasXY {
+    /// Checks if two instances are nearly equal within a specified tolerance in ULPs (Units in the Last Place).
+    ///
+    /// This method delegates to the `approx::UlpsEq::ulps_eq` method, performing approximate equality checks
+    /// one time per coordinate axis.
+    fn is_ulps_eq(
+        self,
+        other: Self,
+        epsilon: <Self::Scalar as approx::AbsDiffEq>::Epsilon,
+        max_ulps: u32,
+    ) -> bool;
+    /// Checks if two instances are nearly equal within a specified absolute difference tolerance.
+    ///
+    /// This method delegates to the `approx::AbsDiffEq::abs_diff_eq` method, performing approximate equality checks
+    /// one time per coordinate axis.
+    fn is_abs_diff_eq(
+        self,
+        other: Self,
+        epsilon: <Self::Scalar as approx::AbsDiffEq>::Epsilon,
+    ) -> bool;
 }
 
 /// A generic two-dimensional vector trait, designed for flexibility in precision.
@@ -86,6 +136,7 @@ where
 /// Note: The actual trait functionality might vary based on the concrete implementations.
 pub trait GenericVector2:
     HasXY
+    + Approx
     + PartialEq
     + AddAssign
     + Neg<Output = Self>
@@ -116,44 +167,12 @@ impl GenericScalar for f32 {
     const NEG_INFINITY: Self = <f32>::NEG_INFINITY;
     const EPSILON: Self = <f32>::EPSILON;
     #[inline(always)]
-    fn to_f32(v: Self) -> f32 {
-        v
-    }
-    #[inline(always)]
-    fn to_f64(v: Self) -> f64 {
-        v as f64
-    }
-    #[inline(always)]
-    fn to_u32(v: Self) -> u32 {
-        v as u32
-    }
-    #[inline(always)]
-    fn to_usize(v: Self) -> usize {
-        v as usize
-    }
-    #[inline(always)]
-    fn from_f32(v: f32) -> Self {
-        v
-    }
-    #[inline(always)]
-    fn from_f64(v: f64) -> Self {
-        v as f32
-    }
-    #[inline(always)]
-    fn from_u32(v: u32) -> Self {
-        v as f32
-    }
-    #[inline(always)]
-    fn from_usize(v: usize) -> Self {
-        v as f32
-    }
-    #[inline(always)]
     fn is_normal(self) -> bool {
-        Float::is_normal(self)
+        f32::is_normal(self)
     }
     #[inline(always)]
     fn is_finite(self) -> bool {
-        Float::is_finite(self)
+        f32::is_finite(self)
     }
     #[inline(always)]
     fn clamp(self, min: Self, max: Self) -> Self {
@@ -169,45 +188,14 @@ impl GenericScalar for f64 {
     const INFINITY: Self = <f64>::INFINITY;
     const NEG_INFINITY: Self = <f64>::NEG_INFINITY;
     const EPSILON: Self = <f64>::EPSILON;
-    #[inline(always)]
-    fn to_f32(v: Self) -> f32 {
-        v as f32
-    }
-    #[inline(always)]
-    fn to_f64(v: Self) -> f64 {
-        v
-    }
-    #[inline(always)]
-    fn to_u32(v: Self) -> u32 {
-        v as u32
-    }
-    #[inline(always)]
-    fn to_usize(v: Self) -> usize {
-        v as usize
-    }
-    #[inline(always)]
-    fn from_f32(v: f32) -> Self {
-        v as f64
-    }
-    #[inline(always)]
-    fn from_f64(v: f64) -> Self {
-        v
-    }
-    #[inline(always)]
-    fn from_u32(v: u32) -> Self {
-        v as f64
-    }
-    #[inline(always)]
-    fn from_usize(v: usize) -> Self {
-        v as f64
-    }
+
     #[inline(always)]
     fn is_normal(self) -> bool {
-        Float::is_normal(self)
+        f64::is_normal(self)
     }
     #[inline(always)]
     fn is_finite(self) -> bool {
-        Float::is_finite(self)
+        f64::is_finite(self)
     }
     #[inline(always)]
     fn clamp(self, min: Self, max: Self) -> Self {
@@ -237,8 +225,10 @@ pub trait HasXY: Sync + Send + Copy + Debug + Sized {
     fn new_2d(x: Self::Scalar, y: Self::Scalar) -> Self;
     fn x(self) -> Self::Scalar;
     fn x_mut(&mut self) -> &mut Self::Scalar;
+    fn set_x(&mut self, val: Self::Scalar);
     fn y(self) -> Self::Scalar;
     fn y_mut(&mut self) -> &mut Self::Scalar;
+    fn set_y(&mut self, val: Self::Scalar);
 }
 
 /// A basic three-dimensional vector trait, designed for flexibility in precision.
@@ -257,6 +247,7 @@ pub trait HasXYZ: HasXY {
     fn new_3d(x: Self::Scalar, y: Self::Scalar, z: Self::Scalar) -> Self;
     fn z(self) -> Self::Scalar;
     fn z_mut(&mut self) -> &mut Self::Scalar;
+    fn set_z(&mut self, val: Self::Scalar);
 }
 
 /// A generic three-dimensional vector trait, designed for flexibility in precision.
@@ -276,6 +267,7 @@ pub trait HasXYZ: HasXY {
 /// Note: The actual trait functionality might vary based on the concrete implementations.
 pub trait GenericVector3:
     HasXYZ
+    + Approx
     + PartialEq
     + AddAssign
     + Neg<Output = Self>
@@ -297,15 +289,9 @@ pub trait GenericVector3:
     fn distance_sq(self, rhs: Self) -> Self::Scalar;
 }
 
-#[cfg(feature = "approx")]
 pub use approx;
-#[cfg(feature = "approx")]
-#[allow(clippy::wrong_self_convention)]
-/// We are not allowed to implement approx::UlpsEq on external types, so this is a work-around
-pub trait SimpleApprox {
-    type AScalar: GenericScalar + approx::UlpsEq;
-    fn is_ulps_eq(self, other: Self) -> bool;
-    fn is_abs_diff_eq(self, other: Self) -> bool;
-}
-
+#[cfg(feature = "cgmath")]
+pub use cgmath;
+#[cfg(feature = "glam")]
+pub use glam;
 pub use num_traits;

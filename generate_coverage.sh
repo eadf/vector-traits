@@ -6,6 +6,9 @@
 command -v cargo >/dev/null 2>&1 || { echo >&2 "cargo is not installed. Aborting."; exit 1; }
 command -v grcov >/dev/null 2>&1 || { echo >&2 "grcov is not installed. Aborting."; exit 1; }
 
+# Set the Rust toolchain to Nightly for the script
+rustup override set nightly
+
 # Set environment variables for Rust to use the LLVM coverage approach
 export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-C instrument-coverage"
@@ -15,7 +18,7 @@ export LLVM_PROFILE_FILE='target/debug/coverage/%p-%m.profraw'
 cargo clean
 
 # Build the project
-cargo build
+cargo build --all-features
 
 # Run tests
 cargo test --all-features
@@ -30,3 +33,6 @@ case $(uname) in
     "CYGWIN"|"MINGW"|"MSYS") start ./target/debug/coverage/html/index.html ;;
     *) echo "Unable to open the coverage report automatically. Please open ./target/debug/coverage/html/index.html manually." ;;
 esac
+
+# Restore the original Rust toolchain
+rustup override unset

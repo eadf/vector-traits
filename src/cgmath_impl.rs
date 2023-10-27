@@ -6,11 +6,9 @@
 #[cfg(test)]
 mod tests;
 
-#[cfg(feature = "approx")]
-use crate::SimpleApprox;
-use crate::{GenericScalar, GenericVector2, GenericVector3, HasXY, HasXYZ};
-pub use ::cgmath::{InnerSpace, MetricSpace, Vector2, Vector3};
-use approx::{abs_diff_eq, ulps_eq};
+use crate::{Approx, GenericScalar, GenericVector2, GenericVector3, HasXY, HasXYZ};
+pub use ::cgmath::{MetricSpace, Vector2, Vector3};
+use approx::{AbsDiffEq, UlpsEq};
 use num_traits::Zero;
 
 macro_rules! impl_cgmath_vector2 {
@@ -26,6 +24,10 @@ macro_rules! impl_cgmath_vector2 {
                 self.x
             }
             #[inline(always)]
+            fn set_x(&mut self, val: Self::Scalar) {
+                self.x = val
+            }
+            #[inline(always)]
             fn x_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.x
             }
@@ -34,21 +36,12 @@ macro_rules! impl_cgmath_vector2 {
                 self.y
             }
             #[inline(always)]
+            fn set_y(&mut self, val: Self::Scalar) {
+                self.y = val
+            }
+            #[inline(always)]
             fn y_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.y
-            }
-        }
-
-        #[cfg(feature = "approx")]
-        impl SimpleApprox for $vec2_type {
-            type AScalar = <$vec2_type as cgmath::VectorSpace>::Scalar;
-            #[inline(always)]
-            fn is_ulps_eq(self, other: Self) -> bool {
-                ulps_eq!(self.x, other.x) && ulps_eq!(self.y, other.y)
-            }
-            #[inline(always)]
-            fn is_abs_diff_eq(self, other: Self) -> bool {
-                abs_diff_eq!(self.x, other.x) && abs_diff_eq!(self.y, other.y)
             }
         }
 
@@ -61,11 +54,11 @@ macro_rules! impl_cgmath_vector2 {
             }
             #[inline(always)]
             fn magnitude(self) -> Self::Scalar {
-                InnerSpace::magnitude(self)
+                cgmath::InnerSpace::magnitude(self)
             }
             #[inline(always)]
             fn magnitude_sq(self) -> Self::Scalar {
-                InnerSpace::magnitude2(self)
+                cgmath::InnerSpace::magnitude2(self)
             }
             #[inline(always)]
             fn dot(self, rhs: Self) -> Self::Scalar {
@@ -81,7 +74,7 @@ macro_rules! impl_cgmath_vector2 {
             }
             #[inline(always)]
             fn safe_normalize(self) -> Option<Self> {
-                let l = InnerSpace::magnitude(self);
+                let l = cgmath::InnerSpace::magnitude(self);
                 if l.is_zero() {
                     None
                 } else {
@@ -90,11 +83,32 @@ macro_rules! impl_cgmath_vector2 {
             }
             #[inline(always)]
             fn distance(self, rhs: Self) -> Self::Scalar {
-                <$vec2_type as cgmath::MetricSpace>::distance(self, rhs)
+                <$vec2_type as MetricSpace>::distance(self, rhs)
             }
             #[inline(always)]
             fn distance_sq(self, rhs: Self) -> Self::Scalar {
                 <$vec2_type>::distance2(self, rhs)
+            }
+        }
+
+        impl Approx for $vec2_type {
+            #[inline(always)]
+            fn is_ulps_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+                max_ulps: u32,
+            ) -> bool {
+                self.x.ulps_eq(&other.x, epsilon, max_ulps)
+                    && self.y.ulps_eq(&other.y, epsilon, max_ulps)
+            }
+            #[inline(always)]
+            fn is_abs_diff_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+            ) -> bool {
+                self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
             }
         }
     };
@@ -116,12 +130,20 @@ macro_rules! impl_cgmath_vector3 {
                 self.x
             }
             #[inline(always)]
+            fn set_x(&mut self, val: Self::Scalar) {
+                self.x = val
+            }
+            #[inline(always)]
             fn x_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.x
             }
             #[inline(always)]
             fn y(self) -> Self::Scalar {
                 self.y
+            }
+            #[inline(always)]
+            fn set_y(&mut self, val: Self::Scalar) {
+                self.y = val
             }
             #[inline(always)]
             fn y_mut(&mut self) -> &mut Self::Scalar {
@@ -139,24 +161,15 @@ macro_rules! impl_cgmath_vector3 {
                 self.z
             }
             #[inline(always)]
+            fn set_z(&mut self, val: Self::Scalar) {
+                self.z = val
+            }
+            #[inline(always)]
             fn z_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.z
             }
         }
-        #[cfg(feature = "approx")]
-        impl SimpleApprox for $vec3_type {
-            type AScalar = <$vec3_type as cgmath::VectorSpace>::Scalar;
-            #[inline(always)]
-            fn is_ulps_eq(self, other: Self) -> bool {
-                ulps_eq!(self.x, other.x) && ulps_eq!(self.y, other.y) && ulps_eq!(self.z, other.z)
-            }
-            #[inline(always)]
-            fn is_abs_diff_eq(self, other: Self) -> bool {
-                abs_diff_eq!(self.x, other.x)
-                    && abs_diff_eq!(self.y, other.y)
-                    && abs_diff_eq!(self.z, other.z)
-            }
-        }
+
         impl GenericVector3 for $vec3_type {
             type Vector2 = $vec2_type;
             #[inline(always)]
@@ -165,19 +178,19 @@ macro_rules! impl_cgmath_vector3 {
             }
             #[inline(always)]
             fn magnitude(self) -> Self::Scalar {
-                InnerSpace::magnitude(self)
+                cgmath::InnerSpace::magnitude(self)
             }
             #[inline(always)]
             fn magnitude_sq(self) -> Self::Scalar {
-                InnerSpace::magnitude2(self)
+                cgmath::InnerSpace::magnitude2(self)
             }
             #[inline(always)]
             fn normalize(self) -> Self {
-                InnerSpace::normalize(self)
+                cgmath::InnerSpace::normalize(self)
             }
             #[inline(always)]
             fn safe_normalize(self) -> Option<Self> {
-                let l = InnerSpace::magnitude(self);
+                let l = cgmath::InnerSpace::magnitude(self);
                 if l.is_zero() {
                     None
                 } else {
@@ -194,11 +207,35 @@ macro_rules! impl_cgmath_vector3 {
             }
             #[inline(always)]
             fn distance(self, rhs: Self) -> Self::Scalar {
-                <$vec3_type as cgmath::MetricSpace>::distance(self, rhs)
+                <$vec3_type as MetricSpace>::distance(self, rhs)
             }
             #[inline(always)]
             fn distance_sq(self, rhs: Self) -> Self::Scalar {
                 <$vec3_type>::distance2(self, rhs)
+            }
+        }
+
+        impl Approx for $vec3_type {
+            #[inline(always)]
+            fn is_ulps_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+                max_ulps: u32,
+            ) -> bool {
+                self.x.ulps_eq(&other.x, epsilon, max_ulps)
+                    && self.y.ulps_eq(&other.y, epsilon, max_ulps)
+                    && self.z.ulps_eq(&other.z, epsilon, max_ulps)
+            }
+            #[inline(always)]
+            fn is_abs_diff_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+            ) -> bool {
+                self.x.abs_diff_eq(&other.x, epsilon)
+                    && self.y.abs_diff_eq(&other.y, epsilon)
+                    && self.z.abs_diff_eq(&other.z, epsilon)
             }
         }
     };

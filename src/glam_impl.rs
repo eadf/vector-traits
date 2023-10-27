@@ -5,32 +5,15 @@
 
 #[cfg(test)]
 mod tests;
-
-use crate::{GenericScalar, GenericVector2, GenericVector3, HasXY, HasXYZ};
+use crate::{Approx, GenericScalar, GenericVector2, GenericVector3, HasXY, HasXYZ};
 #[cfg(feature = "approx")]
 use approx::{abs_diff_eq, ulps_eq};
+use approx::{AbsDiffEq, UlpsEq};
 use num_traits::Zero;
 
 #[cfg(feature = "approx")]
 use crate::SimpleApprox;
 use glam::{DVec2, DVec3, Vec2, Vec3};
-
-#[cfg(not(feature = "approx"))]
-macro_rules! ulps_eq {
-    ($a:expr, $b:expr) => {
-        // Define an empty version of ulps_eq! for when the feature is not enabled
-        true
-    };
-}
-
-#[cfg(not(feature = "approx"))]
-macro_rules! abs_diff_eq {
-    ($a:expr, $b:expr) => {
-        // Define an empty version of abs_diff_eq! for when the feature is not enabled
-        true
-    };
-}
-
 macro_rules! impl_vector2 {
     ($vec_type:tt, $scalar_type:ty, $vec3_type:ty) => {
         impl HasXY for $vec_type {
@@ -44,6 +27,10 @@ macro_rules! impl_vector2 {
                 self.x
             }
             #[inline(always)]
+            fn set_x(&mut self, val: Self::Scalar) {
+                self.x = val
+            }
+            #[inline(always)]
             fn x_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.x
             }
@@ -52,21 +39,12 @@ macro_rules! impl_vector2 {
                 self.y
             }
             #[inline(always)]
+            fn set_y(&mut self, val: Self::Scalar) {
+                self.y = val
+            }
+            #[inline(always)]
             fn y_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.y
-            }
-        }
-
-        #[cfg(feature = "approx")]
-        impl SimpleApprox for $vec_type {
-            type AScalar = $scalar_type;
-            #[inline(always)]
-            fn is_ulps_eq(self, other: Self) -> bool {
-                ulps_eq!(self.x, other.x) && ulps_eq!(self.y, other.y)
-            }
-            #[inline(always)]
-            fn is_abs_diff_eq(self, other: Self) -> bool {
-                abs_diff_eq!(self.x, other.x) && abs_diff_eq!(self.y, other.y)
             }
         }
 
@@ -115,6 +93,26 @@ macro_rules! impl_vector2 {
                 <$vec_type>::distance_squared(self, rhs)
             }
         }
+        impl Approx for $vec_type {
+            #[inline(always)]
+            fn is_ulps_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+                max_ulps: u32,
+            ) -> bool {
+                self.x.ulps_eq(&other.x, epsilon, max_ulps)
+                    && self.y.ulps_eq(&other.y, epsilon, max_ulps)
+            }
+            #[inline(always)]
+            fn is_abs_diff_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+            ) -> bool {
+                self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
+            }
+        }
     };
 }
 
@@ -133,12 +131,20 @@ macro_rules! impl_vector3 {
                 self.x
             }
             #[inline(always)]
+            fn set_x(&mut self, val: Self::Scalar) {
+                self.x = val
+            }
+            #[inline(always)]
             fn x_mut(&mut self) -> &mut Self::Scalar {
                 &mut self.x
             }
             #[inline(always)]
             fn y(self) -> Self::Scalar {
                 self.y
+            }
+            #[inline(always)]
+            fn set_y(&mut self, val: Self::Scalar) {
+                self.y = val
             }
             #[inline(always)]
             fn y_mut(&mut self) -> &mut Self::Scalar {
@@ -154,6 +160,10 @@ macro_rules! impl_vector3 {
             #[inline(always)]
             fn z(self) -> Self::Scalar {
                 self.z
+            }
+            #[inline(always)]
+            fn set_z(&mut self, val: Self::Scalar) {
+                self.z = val
             }
             #[inline(always)]
             fn z_mut(&mut self) -> &mut Self::Scalar {
@@ -218,6 +228,30 @@ macro_rules! impl_vector3 {
             #[inline(always)]
             fn distance_sq(self, rhs: Self) -> Self::Scalar {
                 <$vec_type>::distance_squared(self, rhs)
+            }
+        }
+
+        impl Approx for $vec_type {
+            #[inline(always)]
+            fn is_ulps_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+                max_ulps: u32,
+            ) -> bool {
+                self.x.ulps_eq(&other.x, epsilon, max_ulps)
+                    && self.y.ulps_eq(&other.y, epsilon, max_ulps)
+                    && self.z.ulps_eq(&other.z, epsilon, max_ulps)
+            }
+            #[inline(always)]
+            fn is_abs_diff_eq(
+                self,
+                other: Self,
+                epsilon: <Self::Scalar as AbsDiffEq>::Epsilon,
+            ) -> bool {
+                self.x.abs_diff_eq(&other.x, epsilon)
+                    && self.y.abs_diff_eq(&other.y, epsilon)
+                    && self.z.abs_diff_eq(&other.z, epsilon)
             }
         }
     };
