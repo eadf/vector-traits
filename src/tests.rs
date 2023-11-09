@@ -5,9 +5,12 @@
 
 use crate::{GenericScalar, GenericVector2, GenericVector3, HasXY, HasXYZ};
 use approx::{AbsDiffEq, UlpsEq};
-use num_traits::{real::Real, AsPrimitive};
+use num_traits::{float::FloatCore, AsPrimitive};
 
 pub fn test_xy<T: HasXY>(x: T::Scalar, y: T::Scalar) {
+    assert_eq!(x, T::Scalar::from_bits(x.to_bits()));
+    assert_eq!(y, T::Scalar::from_bits(y.to_bits()));
+
     let v0 = T::new_2d(x, y);
     assert_eq!(v0.x(), x);
     assert_eq!(v0.y(), y);

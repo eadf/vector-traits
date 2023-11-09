@@ -3,6 +3,54 @@
 
 // This file is part of vector-traits.
 
+//! # Vector-Traits Crate
+//!
+//! `vector-traits` is a Rust crate designed to provide a set of traits for abstracting over different vector
+//! implementations and scalar types, offering a unified interface for a basic set of vector operations. This crate facilitates
+//! seamless transitions between different vector libraries and scalar precisions (e.g., `f32` and `f64`) without
+//! requiring significant code modifications.
+//!
+//! ## Features
+//!
+//! - Abstract over two-dimensional and three-dimensional vectors with `GenericVector2` and `GenericVector3` traits.
+//! - Generic scalar trait `GenericScalar` for a flexible scalar type handling.
+//! - Basic vector traits `HasXY` and `HasXYZ` for down to metal, custom vector storage types, e.g., FFI types.
+//! - Seamless transition between different vector libraries like `cgmath` and `glam`.
+//! - Ability to switch between different scalar types (`f32`, `f64`) effortlessly.
+//!
+//! ## Supported Vector Implementations
+//!
+//! Currently, the following vector types from `cgmath` and `glam` libraries are supported:
+//!
+//! - `glam::Vec2`
+//! - `glam::DVec2`
+//! - `glam::Vec3`
+//! - `glam::DVec3`
+//! - `cgmath::Vector2`
+//! - `cgmath::Vector3`
+//!
+//! ## Usage
+//!
+//! Add `vector-traits` to your `Cargo.toml` dependencies along with the desired features:
+//!
+//! ```toml
+//! [dependencies]
+//! vector-traits = { version = "0.2.0", features = ["glam", "cgmath"] }  # only use what you need
+//! ```
+//!
+//! ## Contributing
+//!
+//! Contributions are welcome! Feel free to open an issue or submit a pull request.
+//!
+//! ## License
+//!
+//! Licensed under either of
+//!
+//! - Apache License, Version 2.0 ([LICENSE-APACHE](https://example.com/your-apache-license-link))
+//! - MIT license ([LICENSE-MIT](https://example.com/your-mit-license-link))
+//!
+//! at your option.
+
 #![deny(
     rust_2018_compatibility,
     rust_2018_idioms,
@@ -22,7 +70,7 @@
 )]
 #![warn(clippy::explicit_into_iter_loop)]
 
-use num_traits::{float::FloatCore, real::Real, AsPrimitive, FromPrimitive, Signed, ToPrimitive};
+use num_traits::{float::FloatCore, AsPrimitive, Float, FromPrimitive, Signed, ToPrimitive};
 use std::{
     fmt::{Debug, Display, LowerExp},
     ops::{Add, AddAssign, DivAssign, Index, MulAssign, Neg, Sub, SubAssign},
@@ -40,7 +88,7 @@ pub trait GenericScalar
 where
     Self: Display
         + Debug
-        + Real
+        + Float
         + FloatCore
         + FromPrimitive
         + ToPrimitive
@@ -75,6 +123,8 @@ where
         + AsPrimitive<i8>
         + approx::UlpsEq<Epsilon = Self>,
 {
+    /// The type of the to_bits() and from_bits() methods
+    type BitsType;
     const ZERO: Self;
     const ONE: Self;
     const TWO: Self;
@@ -82,8 +132,8 @@ where
     const INFINITY: Self;
     const NEG_INFINITY: Self;
     const EPSILON: Self;
-    fn is_normal(self) -> bool;
-    fn is_finite(self) -> bool;
+    fn to_bits(self) -> Self::BitsType;
+    fn from_bits(bits: Self::BitsType) -> Self;
     fn clamp(self, min: Self, max: Self) -> Self;
 }
 
@@ -159,6 +209,7 @@ pub trait GenericVector2:
 }
 
 impl GenericScalar for f32 {
+    type BitsType = u32;
     const ZERO: Self = 0.0;
     const ONE: Self = 1.0;
     const TWO: Self = 2.0;
@@ -167,12 +218,12 @@ impl GenericScalar for f32 {
     const NEG_INFINITY: Self = <f32>::NEG_INFINITY;
     const EPSILON: Self = <f32>::EPSILON;
     #[inline(always)]
-    fn is_normal(self) -> bool {
-        f32::is_normal(self)
+    fn to_bits(self) -> Self::BitsType {
+        f32::to_bits(self)
     }
     #[inline(always)]
-    fn is_finite(self) -> bool {
-        f32::is_finite(self)
+    fn from_bits(bits: Self::BitsType) -> Self {
+        f32::from_bits(bits)
     }
     #[inline(always)]
     fn clamp(self, min: Self, max: Self) -> Self {
@@ -181,6 +232,7 @@ impl GenericScalar for f32 {
 }
 
 impl GenericScalar for f64 {
+    type BitsType = u64;
     const ZERO: Self = 0.0;
     const ONE: Self = 1.0;
     const TWO: Self = 2.0;
@@ -188,14 +240,13 @@ impl GenericScalar for f64 {
     const INFINITY: Self = <f64>::INFINITY;
     const NEG_INFINITY: Self = <f64>::NEG_INFINITY;
     const EPSILON: Self = <f64>::EPSILON;
-
     #[inline(always)]
-    fn is_normal(self) -> bool {
-        f64::is_normal(self)
+    fn to_bits(self) -> Self::BitsType {
+        f64::to_bits(self)
     }
     #[inline(always)]
-    fn is_finite(self) -> bool {
-        f64::is_finite(self)
+    fn from_bits(bits: Self::BitsType) -> Self {
+        f64::from_bits(bits)
     }
     #[inline(always)]
     fn clamp(self, min: Self, max: Self) -> Self {
