@@ -1,8 +1,9 @@
 [![crates.io](https://img.shields.io/crates/v/vector-traits.svg)](https://crates.io/crates/vector-traits)
 [![Documentation](https://docs.rs/vector-traits/badge.svg)](https://docs.rs/vector-traits)
 [![Workflow](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)](https://github.com/eadf/vector-traits/workflows/Rust/badge.svg)
-[![dependency status](https://deps.rs/crate/vector-traits/0.3.0/status.svg)](https://deps.rs/crate/vector-traits/0.3.0)
+[![dependency status](https://deps.rs/crate/vector-traits/0.3.1/status.svg)](https://deps.rs/crate/vector-traits/0.3.1)
 ![license](https://img.shields.io/crates/l/vector-traits)
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/eadf)
 
 # Vector-Traits Crate
 
@@ -36,7 +37,7 @@ Add `vector-traits` to your `Cargo.toml` dependencies along with the desired fea
 
 ```toml
 [dependencies]
-vector-traits = { version = "0.3.0", features = ["glam", "cgmath"] }  # only use what you need
+vector-traits = { version = "0.3.1", features = ["glam", "cgmath"] }  # only use what you need
 ```
 
 ## Documentation
