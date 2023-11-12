@@ -73,6 +73,7 @@
 use num_traits::{float::FloatCore, AsPrimitive, Float, FromPrimitive, Signed, ToPrimitive};
 use std::{
     fmt::{Debug, Display, LowerExp},
+    hash::Hash,
     ops::{Add, AddAssign, DivAssign, Index, MulAssign, Neg, Sub, SubAssign},
 };
 
@@ -124,7 +125,7 @@ where
         + approx::UlpsEq<Epsilon = Self>,
 {
     /// The type of the to_bits() and from_bits() methods
-    type BitsType;
+    type BitsType: Hash + Eq + Ord + Display + Debug;
     const ZERO: Self;
     const ONE: Self;
     const TWO: Self;
