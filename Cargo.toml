@@ -16,6 +16,8 @@ num-traits = "0.2.17"
 [features]
 glam = ["dep:glam"]
 cgmath = ["dep:cgmath"]
+glam-core-simd  = ["glam/core-simd"]
+glam-fast-math = ["glam/fast-math"]
 
 [profile.release]
 lto = true

@@ -81,6 +81,10 @@ use std::{
 pub mod cgmath_impl;
 #[cfg(feature = "glam")]
 pub mod glam_impl;
+
+#[cfg(feature = "glam")]
+pub use glam_impl::Vec2A;
+
 #[cfg(test)]
 mod tests;
 
@@ -159,6 +163,7 @@ pub trait Approx: HasXY {
         epsilon: <Self::Scalar as approx::AbsDiffEq>::Epsilon,
         max_ulps: u32,
     ) -> bool;
+
     /// Checks if two instances are nearly equal within a specified absolute difference tolerance.
     ///
     /// This method delegates to the `approx::AbsDiffEq::abs_diff_eq` method, performing approximate equality checks
