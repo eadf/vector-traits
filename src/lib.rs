@@ -35,7 +35,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! vector-traits = { version = "0.3.1", features = ["glam", "cgmath"] }  # only use what you need
+//! vector-traits = { version = "0.3.2", features = ["glam", "cgmath"] }  # only use what you need
 //! ```
 //!
 //! ## Contributing

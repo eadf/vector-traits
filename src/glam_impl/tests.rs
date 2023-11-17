@@ -9,7 +9,7 @@ use crate::{HasXY, Vec2A};
 fn test_vec2a() {
     let a: Vec2A = (1.0, 2.0).into();
     let b: Vec2A = [1.0, 2.0].into();
-    let c: Vec2A = glam::vec2(1.0,2.0).into();
+    let c: Vec2A = glam::vec2(1.0, 2.0).into();
     let d: glam::Vec2 = c.into();
 
     assert_eq!(a.x(), b.x());

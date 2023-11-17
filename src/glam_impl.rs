@@ -269,13 +269,13 @@ impl Vec2A {
 }
 
 impl From<Vec2> for Vec2A {
-    fn from(v:Vec2) -> Self {
+    fn from(v: Vec2) -> Self {
         Self(v)
     }
 }
 
 impl From<Vec2A> for Vec2 {
-    fn from(v:Vec2A) -> Self {
+    fn from(v: Vec2A) -> Self {
         v.0
     }
 }
